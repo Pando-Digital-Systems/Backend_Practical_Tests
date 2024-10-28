@@ -32,8 +32,10 @@ class AuthController extends Controller
     }
 
     // Login Method
+    // Login Method
     public function login(Request $request)
     {
+        // Validation
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -43,21 +45,28 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        // Check user credentials
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
+        // Create token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
     }
 
+
     // User Profile Method
     public function userProfile(Request $request)
     {
-        return response()->json($request->user());
+        // Get the authenticated user
+        $user = $request->user();
+
+        // Return the view and pass the user data
+        return view('user-profile', compact('user'));
     }
 
     // Logout Method
