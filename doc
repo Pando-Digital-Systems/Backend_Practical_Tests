@@ -1,0 +1,106 @@
+Here's a simple and clear documentation for the API endpoints you've set up in your Laravel application, including details on authentication and authorization requirements.
+
+## API Documentation
+
+### Base URL
+
+```
+http://yourdomain.com/api/
+```
+
+### Endpoints
+
+#### 1. User Registration
+
+
+-   **Endpoint:** `POST /api/register`
+-   **Description:** Registers a new user.
+-   **Request Body:**
+    ```json
+    {
+        "name": "string",
+        "email": "string",
+        "password": "string",
+        "password_confirmation": "string"
+    }
+    ```
+-   **Response:**
+    -   **201 Created:**
+        ```json
+        {
+            "message": "User registered successfully"
+        }
+        ```
+    -   **422 Unprocessable Entity:**
+        -   If validation fails, returns validation errors in JSON format.
+-   **Authentication Required:** No
+
+---
+
+#### 2. User Login
+
+-   **Endpoint:** `POST /api/login`
+-   **Description:** Authenticates a user and issues a token.
+-   **Request Body:**
+    ```json
+    {
+        "email": "string",
+        "password": "string"
+    }
+    ```
+-   **Response:**
+
+    -   **200 OK:**
+        ```json
+        {
+            "access_token": "string",
+            "token_type": "Bearer"
+        }
+        ```
+    -   **401 Unauthorized:**
+        -   If credentials are invalid, returns an error message.
+    -   **422 Unprocessable Entity:**
+        -   If validation fails, returns validation errors in JSON format.
+
+-   **Authentication Required:** No
+
+---
+
+#### 3. User Profile
+
+-   **Endpoint:** `GET /api/user-profile`
+-   **Description:** Retrieves the authenticated user's profile.
+-   **Response:**
+    -   **200 OK:** Returns the user's profile information (name, email, etc.).
+-   **Authentication Required:** Yes (User must be authenticated via Bearer token)
+
+---
+
+#### 4. User Logout
+
+-   **Endpoint:** `POST /api/logout`
+-   **Description:** Logs out the authenticated user and revokes their token.
+-   **Response:**
+    -   **200 OK:**
+        ```json
+        {
+            "message": "Logged out successfully"
+        }
+        ```
+-   **Authentication Required:** Yes (User must be authenticated via Bearer token)
+
+---
+
+### Authentication and Authorization
+
+-   **Authentication Mechanism:** The API uses **Laravel Sanctum** for token-based authentication.
+-   **Authorization:** Only authenticated users can access the user profile and logout endpoints. The login and registration endpoints do not require authentication.
+
+### Notes
+
+-   Ensure to send the `Authorization: Bearer YOUR_ACCESS_TOKEN` header for any requests to endpoints requiring authentication.
+-   Replace `http://yourdomain.com` with your actual domain or localhost during development.
+
+---
+
+This documentation provides a straightforward overview of your API endpoints, making it easy for users to understand how to interact with your application. If you need further details or adjustments, let me know!

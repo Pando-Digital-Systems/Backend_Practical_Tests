@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
 
 class AuthController extends Controller
 {
@@ -32,7 +34,7 @@ class AuthController extends Controller
     }
 
     // Login Method
-    // Login Method
+
     public function login(Request $request)
     {
         // Validation
@@ -42,21 +44,44 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            // If it's an API request
+            if ($request->expectsJson()) {
+                return response()->json($validator->errors(), 422); // Return JSON for validation errors
+            } else {
+                return redirect()->back()->withErrors($validator)->withInput(); // Return to view for validation errors
+            }
         }
 
         // Check user credentials
-        $user = User::where('email', $request->email)->first();
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Authentication passed...
+            $user = Auth::user(); // Get the authenticated user
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            // Create token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // If it's an API request
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                ], 200); // 200 OK
+            } else {
+                // Redirect to the user profile view for web requests
+                return redirect()->route('user-profile')->with('access_token', $token);
+            }
         }
 
-        // Create token
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json(['access_token' => $token, 'token_type' => 'Bearer']);
+        // Invalid credentials
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'Invalid credentials'], 401); // Return JSON for invalid credentials
+        } else {
+            return redirect()->back()->withErrors(['error' => 'Invalid credentials'])->withInput(); // Return to view
+        }
     }
+
+
+
 
 
     // User Profile Method
